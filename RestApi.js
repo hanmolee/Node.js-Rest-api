@@ -8,6 +8,13 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var sql = require('mysql');
+var Serialport = require('serialport');
+var value;
+
+var port = new Serialport('/dev/ttyACM1',{
+    baudrate: 9600,
+    parser: Serialport.parsers.readline('\n')
+});
 
 var config = sql.createConnection({
     server : 'localhost',
@@ -22,6 +29,21 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());//request body객체 안의 데이터를 json형식으로 인코딩
 
+
+port.on('open', () => {
+    console.log('Serial Port open!!');
+    
+    port.on('data', (data) => {
+        console.log('data : ' + data);
+        
+        insert(data);
+                
+        
+    });
+});
+
+
+
 config.connect((err) => {  
 if(!err) {  
     console.log("Database is connected ... \n\n");    
@@ -31,24 +53,29 @@ else {
 }  
 });
 
-app.get("/hanmo", (req, res) => {
 
-        var data1 ="'40.40','2017-07-07 11:44:21'";
+function insert(data) {
+    app.get("/hanmo", (req, res) => {
+
+        //var data1 ="'value','2017-07-07 11:55:21'";
+        var data2 = "'2017-07-07 11:55:21'";
         config.query('use node_mysql');
-        config.query('call insertdata('+data1+');', (err, rows) => {
-        config.end();
-        console.log(rows);       
-        
+        config.query('call insertdata('+data+','+data2+');', (err, rows) => {
+            //현재 한번의 페이지에 한번의 insert가 이루어진다
+            //내가 원하는 것은 데이터가 들어올경우에 항상 insert를 원한다...
+        //config.end();
+  
+  
+                
         if (!err){  
-            response.send(rows);
             console.log('complete!!!', rows);  
         }  
         else  
             console.log('Error while performing Query.');  
- 
-
-    });
 });
+});
+    
+}
 
 
 app.get("/",(request,response) =>{  
