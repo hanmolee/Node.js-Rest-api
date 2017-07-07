@@ -31,17 +31,36 @@ else {
 }  
 });
 
+app.get("/hanmo", (req, res) => {
+
+        var data1 ="'40.40','2017-07-07 11:44:21'";
+        config.query('use node_mysql');
+        config.query('call insertdata('+data1+');', (err, rows) => {
+        config.end();
+        console.log(rows);       
+        
+        if (!err){  
+            response.send(rows);
+            console.log('complete!!!', rows);  
+        }  
+        else  
+            console.log('Error while performing Query.');  
+ 
+
+    });
+});
+
 
 app.get("/",(request,response) =>{  
-config.query('use node_mysql');
-config.query('call selectdata;', (err, rows, fields) => {  
-config.end();
-  if (!err){  
-    response.send(rows);
-    console.log('The solution is: ', rows);  
-  }  
-  else  
-    console.log('Error while performing Query.');  
+    config.query('use node_mysql');
+    config.query('call selectdata;', (err, rows, fields) => {  
+    config.end();
+    if (!err){  
+        response.send(rows);
+        console.log('The solution is: ', rows);  
+    }  
+    else  
+        console.log('Error while performing Query.');  
   });  
 });  
 
