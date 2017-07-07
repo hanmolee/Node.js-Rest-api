@@ -31,18 +31,20 @@ else {
 }  
 });
 
-app.get("/",function(request,response){  
+
+app.get("/",(request,response) =>{  
 config.query('use node_mysql');
-config.query('SELECT * from data', function(err, rows, fields) {  
-config.end();  
+config.query('call selectdata;', (err, rows, fields) => {  
+config.end();
   if (!err){  
-    response.send(rows);   
+    response.send(rows);
     console.log('The solution is: ', rows);  
   }  
   else  
     console.log('Error while performing Query.');  
   });  
 });  
+
 
 
 app.listen(3000, () => {//서버가 클라이언트 요청 대기상태
