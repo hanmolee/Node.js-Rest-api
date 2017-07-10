@@ -11,7 +11,6 @@ var sql = require('mysql');
 var Serialport = require('serialport');
 require('date-utils');//date format을 위한 모듈 사용
 
-
 var port = new Serialport('/dev/ttyACM0',{
     baudrate: 9600,
     parser: Serialport.parsers.readline('\n')
@@ -25,10 +24,67 @@ var config = sql.createConnection({
 });
 
 var app = express();
+
 app.use(bodyParser.urlencoded({
     extended : true
 }));
 app.use(bodyParser.json());//request body객체 안의 데이터를 json형식으로 인코딩
+
+var Queue = function() {
+  this.list = [];
+  this.first = null;
+  this.size = 0;
+};
+
+
+
+var Node = function(data) {
+  this.data = data;
+  this.next = null;
+};
+
+
+Queue.prototype.enqueue = function(data) {
+  var node = new Node(data);
+
+  this.list.push(data);
+  
+  if (!this.first){
+    this.first = node;
+  } else {
+    n = this.first;
+    while (n.next) {
+      n = n.next;
+    }Error
+    n.next = node;
+  }
+
+  this.size += 1;
+  return node;
+};
+
+Queue.prototype.dequeue = function(){
+    //shift는 Array의 내장함수이다. 
+    //배열내의 맨 앞 요소를 반환하고 배열내에서 삭제한다.
+    var queuvalue = this.first.data;
+        this.first = this.first.next;
+        return queuvalue;
+}
+
+Queue.prototype.print = function() {
+  var retStr="";
+    for(var i=0; i<this.list.length; i++)
+    {
+        retStr=retStr + this.list[i] + "\n";
+    }
+    console.log('queue!!!!!!!! : ' + retStr);
+    
+    return retStr;
+}
+
+
+var queue = new Queue();//port.on안에 객체를 생성하면 지역변수이기 때문에 데이터값이 계속 초기화되었다
+                        //그래서 전역변수로 생성해 큐에 계속 쌓이도록 하였다.
 
 
 port.on('open', () => {
@@ -40,9 +96,18 @@ port.on('open', () => {
 
         console.log('data : ' + data + 'time : ' + datetime);
         
-        insert(data, datetime);//insert
-                
         
+        queue.enqueue(data);
+                
+        queue.print();
+
+        if(data == 0){
+            insert();
+        }
+
+       
+        //insert(data, datetime);//insert
+                        
     });
 });
 
@@ -58,13 +123,19 @@ else {
 });
 
 
-function insert(data, time) {
-    app.get("/hanmo", (req, res) => {
+function insert() {
+app.get("/hanmo", (req, res) => {
 
-        console.log('데이터 인서트!!!!! : '+data+ ' : ' +time);
+    //console.log('데이터 인서트!!!!! : '+data+ ' : ' +time);
         
-        config.query('use node_mysql');
-        config.query('call insertdata('+data+','+"'"+time+"'"+');', (err, rows) => {
+        for (var i = 0; i < queue.list.length; i++) {
+             var data1 = queue.list[i];
+             
+             var time = "'2017-07-07 11:55:21'";
+             console.log('data1 : ' + data1+ '\n' +'time : '+ time);
+             config.query('call insertdata('+data1+','+time+');', (err, rows) => {
+                
+                 
             //현재 한번의 페이지에 한번의 insert가 이루어진다
             //내가 원하는 것은 데이터가 들어올경우에 항상 insert를 원한다...
         //config.end();
@@ -74,10 +145,14 @@ function insert(data, time) {
         }  
         else  
             console.log('Error while performing Query.');  
+        });
+    }
+
+//        config.query('use node_mysql');
+  
 });
-});
-    
 }
+
 
 
 app.get("/",(request,response) =>{  
