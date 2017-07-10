@@ -63,16 +63,12 @@ function insert(data, time) {
 
         console.log('데이터 인서트!!!!! : '+data+ ' : ' +time);
         
-        //var data1 ="'value','2017-07-07 11:55:21'";
-        var data2 = "'2017-07-07 11:55:21'";
         config.query('use node_mysql');
         config.query('call insertdata('+data+','+"'"+time+"'"+');', (err, rows) => {
             //현재 한번의 페이지에 한번의 insert가 이루어진다
             //내가 원하는 것은 데이터가 들어올경우에 항상 insert를 원한다...
         //config.end();
-  
-  
-        
+          
         if (!err){  
             console.log('complete!!!', rows);  
         }  
