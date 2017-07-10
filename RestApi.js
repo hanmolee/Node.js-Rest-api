@@ -30,16 +30,14 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());//request body객체 안의 데이터를 json형식으로 인코딩
 
-var Queue1 = function() {
+var Queue = function() {
   this.list = [];
   this.first = null;
   this.size = 0;
-};
 
+    this.enqueue = function(data) {
 
-Queue1.prototype.enqueue = function(data) {
-
-  this.list.push(data);  
+    this.list.push(data);  
 /*  if (!this.first){
     this.first = node;
   } else {
@@ -51,36 +49,34 @@ Queue1.prototype.enqueue = function(data) {
   }
   this.size += 1;
   return node;*/
-};
+    };
 
-Queue1.prototype.dequeue = function(){
+    this.dequeue = function(){
     //shift는 Array의 내장함수이다. 
     //배열내의 맨 앞 요소를 반환하고 배열내에서 삭제한다.
-    var queuvalue = this.first.data;
+        var queuvalue = this.first.data;
         this.first = this.first.next;
         return queuvalue;
-}
-
-
-Queue1.prototype.print = function() {
-  var retStr="";
-
-    for(var i=0; i<this.list.length; i++)
-    {
-        retStr=retStr + this.list[i] + "\n";
     }
 
-    console.log('data queue!!!!!!!! : ' + retStr );
+
+    this.print = function() {
+        var retStr="";
+
+        for(var i=0; i<this.list.length; i++)
+        {
+            retStr=retStr + this.list[i] + "\n";
+        }
+
+        console.log('data queue!!!!!!!! : ' + retStr );
     
-    return retStr;
-}
+        return retStr;
+    }
+};
 
-
-
-
-var queue1 = new Queue1();//port.on안에 객체를 생성하면 지역변수이기 때문에 데이터값이 계속 초기화되었다
+var queue1 = new Queue();//port.on안에 객체를 생성하면 지역변수이기 때문에 데이터값이 계속 초기화되었다
                         //그래서 전역변수로 생성해 큐에 계속 쌓이도록 하였다.
-
+var queue2 = new Queue();
 
 
 port.on('open', () => {
@@ -93,8 +89,10 @@ port.on('open', () => {
         console.log('data : ' + data + 'time : ' + datetime);
         
         queue1.enqueue(data);
+        queue2.enqueue(datetime);
                 
         queue1.print();
+        queue2.print();
 
         if(data == 0){
             insert();
@@ -120,11 +118,14 @@ app.get("/hanmo", (req, res) => {
 
     //console.log('데이터 인서트!!!!! : '+data+ ' : ' +time);
         
-        for (var i = 0; i < queue1.list.length; i++) {
+       for (var i = 0; i < queue1.list.length; i++) {//for문 문제.... 중복된 데이터가 들어간다(해결)
+
              var data1 = queue1.list[i];
-             var time = "'2017-07-10 18:00:15'";
-             console.log('data1 : ' + data1+ '\n' +'time : '+ time);
-             config.query('call insertdata('+data1+','+time+');', (err, rows) => {
+             var data2 = queue2.list[i];
+             
+             //var time = "'2017-07-10 18:00:15'";
+             console.log('data1 : ' + data1+ '\n' +'time : '+ data2);
+             config.query('call insertdata('+data1+','+"'"+data2+"'"+');', (err, rows) => {
                 
                  
             //현재 한번의 페이지에 한번의 insert가 이루어진다
@@ -139,6 +140,7 @@ app.get("/hanmo", (req, res) => {
         else  
             console.log('Error while performing Query.');  
         });
+        }
     }
 
         
