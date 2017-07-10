@@ -140,7 +140,7 @@ app.get("/hanmo", (req, res) => {
         else  
             console.log('Error while performing Query.');  
         });
-        }
+        
     }
 
         
