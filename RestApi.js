@@ -30,26 +30,17 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());//request body객체 안의 데이터를 json형식으로 인코딩
 
-var Queue = function() {
+var Queue1 = function() {
   this.list = [];
   this.first = null;
   this.size = 0;
 };
 
 
+Queue1.prototype.enqueue = function(data) {
 
-var Node = function(data) {
-  this.data = data;
-  this.next = null;
-};
-
-
-Queue.prototype.enqueue = function(data) {
-  var node = new Node(data);
-
-  this.list.push(data);
-  
-  if (!this.first){
+  this.list.push(data);  
+/*  if (!this.first){
     this.first = node;
   } else {
     n = this.first;
@@ -58,12 +49,11 @@ Queue.prototype.enqueue = function(data) {
     }Error
     n.next = node;
   }
-
   this.size += 1;
-  return node;
+  return node;*/
 };
 
-Queue.prototype.dequeue = function(){
+Queue1.prototype.dequeue = function(){
     //shift는 Array의 내장함수이다. 
     //배열내의 맨 앞 요소를 반환하고 배열내에서 삭제한다.
     var queuvalue = this.first.data;
@@ -71,20 +61,26 @@ Queue.prototype.dequeue = function(){
         return queuvalue;
 }
 
-Queue.prototype.print = function() {
+
+Queue1.prototype.print = function() {
   var retStr="";
+
     for(var i=0; i<this.list.length; i++)
     {
         retStr=retStr + this.list[i] + "\n";
     }
-    console.log('queue!!!!!!!! : ' + retStr);
+
+    console.log('data queue!!!!!!!! : ' + retStr );
     
     return retStr;
 }
 
 
-var queue = new Queue();//port.on안에 객체를 생성하면 지역변수이기 때문에 데이터값이 계속 초기화되었다
+
+
+var queue1 = new Queue1();//port.on안에 객체를 생성하면 지역변수이기 때문에 데이터값이 계속 초기화되었다
                         //그래서 전역변수로 생성해 큐에 계속 쌓이도록 하였다.
+
 
 
 port.on('open', () => {
@@ -96,17 +92,13 @@ port.on('open', () => {
 
         console.log('data : ' + data + 'time : ' + datetime);
         
-        
-        queue.enqueue(data);
+        queue1.enqueue(data);
                 
-        queue.print();
+        queue1.print();
 
         if(data == 0){
             insert();
         }
-
-       
-        //insert(data, datetime);//insert
                         
     });
 });
@@ -128,16 +120,17 @@ app.get("/hanmo", (req, res) => {
 
     //console.log('데이터 인서트!!!!! : '+data+ ' : ' +time);
         
-        for (var i = 0; i < queue.list.length; i++) {
-             var data1 = queue.list[i];
-             
-             var time = "'2017-07-07 11:55:21'";
+        for (var i = 0; i < queue1.list.length; i++) {
+             var data1 = queue1.list[i];
+             var time = "'2017-07-10 18:00:15'";
              console.log('data1 : ' + data1+ '\n' +'time : '+ time);
              config.query('call insertdata('+data1+','+time+');', (err, rows) => {
                 
                  
             //현재 한번의 페이지에 한번의 insert가 이루어진다
             //내가 원하는 것은 데이터가 들어올경우에 항상 insert를 원한다...
+            //항상 insert하는 요청을 보내는 것은 과부하를 일으킬 수도 혹은 네트워크상 문제가 발생할 수 있다고 판단
+            //큐에 저장해 놓고 있다가 이벤트가 발생하면 큐에 저장해 놓은 데이터를 인서트하도록 바꾸었다.
         //config.end();
           
         if (!err){  
@@ -148,6 +141,7 @@ app.get("/hanmo", (req, res) => {
         });
     }
 
+        
 //        config.query('use node_mysql');
   
 });
